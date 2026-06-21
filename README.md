@@ -1,4 +1,4 @@
-![KYMA](link_alla_tua_cover_image.png)
+![KYMA](static/kyma_project_banner_16x9.png)
 
 # KYMA
 > **Real-time music recognition and live lyrics provider powered by Musixmatch**
