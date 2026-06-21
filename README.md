@@ -24,7 +24,7 @@ By combining an audio-text hybrid recognition engine and deeply integrating with
 ## How We Use Musixmatch (Core Feature)
 Musixmatch is the core of our recognition and lyrics retrieval system:
 * **`track.search`**: Used to download an artist's catalog (Tribute Band bias mode) to drastically improve recognition accuracy for specific live events.
-* **`matcher.subtitle.get` / `matcher.lyrics.get`**: Used to fetch the official, high-quality lyrics for the recognized tracks. (Note: LRC timestamps are parsed and stripped on the frontend to provide a clean, readable plain-text experience).
+* **`matcher.lyrics.get` / `track.lyrics.get`**: Used to fetch the official, high-quality plain-text lyrics for the recognized tracks.
 * **`matcher.track.get`**: Crucial for retrieving the **official ISRC** of the recognized track, guaranteeing accuracy when identifying composers and publishers for royalty reporting purposes.
 
 ---
@@ -53,7 +53,7 @@ Musixmatch is the core of our recognition and lyrics retrieval system:
 * **Framework:** Flask
 * **Audio Processing:** numpy, scipy, sounddevice
 * **APIs:**
-    * **Musixmatch API** (Lyrics, LRC, Search, ISRC)
+    * **Musixmatch API** (Lyrics, Search, ISRC)
     * ACRCloud (Audio Fingerprinting) 
     * ElevenLabs (Speech-to-Text)
     * Spotify Web API / MusicBrainz (Extra metadata)

@@ -25,7 +25,6 @@ class LyricsManager:
 
         self.catalog_bot = MusixmatchCatalog()
         self.lyrics_cache = {}
-        self.subtitles_cache = {}
         self.titles_map = {} 
         self.current_artist = None
         self.detected_language_code = None
@@ -40,7 +39,6 @@ class LyricsManager:
         
         self.current_artist = artist_name
         self.lyrics_cache = {}
-        self.subtitles_cache = {}
         self.titles_map = {}
         self.detected_language_code = None 
         
@@ -179,19 +177,6 @@ class LyricsManager:
                     self.titles_map[norm_key] = title
                     success = True
             
-            # 2. Fetch subtitles (time-synced)
-            subs_url = f"{self.base_url}matcher.subtitle.get"
-            resp_subs = self.session.get(subs_url, params=params, timeout=5)
-            if resp_subs.status_code == 200:
-                data_subs = resp_subs.json()
-                header_status_subs = data_subs.get("message", {}).get("header", {}).get("status_code")
-                if header_status_subs == 200:
-                    subtitle_body = data_subs["message"]["body"]["subtitle"]["subtitle_body"]
-                    # TODO (compliance): chiamare pixel_tracking_url da data_subs["message"]["body"]["subtitle"]["pixel_tracking_url"]
-                    self.subtitles_cache[norm_key] = subtitle_body
-                    self.titles_map[norm_key] = title
-                    success = True
-
             return success
         except Exception as e:
             print(f"       ⚠️ Errore download Musixmatch '{title}': {e}")
@@ -207,10 +192,10 @@ class LyricsManager:
 
         norm_key = TextUtils.normalize_for_match(title)
 
-        # 1. Cerca nella cache pre-scaricata (LRC)
-        if norm_key in self.subtitles_cache:
-            print(f"   🎤 [Lyrics] Cache HIT per '{title}' → LRC pronto")
-            return {"type": "lrc", "text": self.subtitles_cache[norm_key]}
+        # 1. Cerca nella cache pre-scaricata (Plain Text)
+        if norm_key in self.lyrics_cache:
+            print(f"   🎤 [Lyrics] Cache HIT per '{title}' → Testo pronto")
+            return {"type": "plain", "text": self.lyrics_cache[norm_key]}
 
         # 2. Fallback on-demand a Musixmatch
         if not self.musixmatch_token:
@@ -235,26 +220,7 @@ class LyricsManager:
                 params["f_subtitle_length"] = duration_s
                 params["f_subtitle_length_max_deviation"] = 5
 
-            # Tentativo 1: Testo Sincronizzato
-            try:
-                resp = self.session.get(f"{self.base_url}matcher.subtitle.get", params=params, timeout=6)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    h_status = data.get("message", {}).get("header", {}).get("status_code")
-                    if h_status == 402:
-                        print("   ⚠️ [Lyrics] Rate limit Musixmatch (402).")
-                        return "rate_limit"
-                    if h_status == 200:
-                        sub_body = data.get("message", {}).get("body", {}).get("subtitle", {}).get("subtitle_body", "")
-                        if sub_body:
-                            self.subtitles_cache[norm_key] = sub_body
-                            self.titles_map[norm_key] = title
-                            print(f"   ✅ [Lyrics] LRC on-demand ottenuto per '{title}'")
-                            return {"type": "lrc", "text": sub_body}
-            except Exception as e:
-                print(f"   ⚠️ [Lyrics] Errore matcher.subtitle.get per '{title}': {e}")
-
-            # Tentativo 2: Testo Semplice
+            # Tentativo 1: Testo Semplice
             try:
                 params.pop("f_subtitle_length", None)
                 params.pop("f_subtitle_length_max_deviation", None)
@@ -266,6 +232,8 @@ class LyricsManager:
                         lyrics_body = data2.get("message", {}).get("body", {}).get("lyrics", {}).get("lyrics_body", "")
                         if lyrics_body:
                             lyrics_body = lyrics_body.split('******* This Lyrics is NOT for Commercial use *******')[0].strip()
+                            self.lyrics_cache[norm_key] = lyrics_body
+                            self.titles_map[norm_key] = title
                             print(f"   ✅ [Lyrics] Plain Text fallback ottenuto per '{title}'")
                             return {"type": "plain", "text": lyrics_body}
             except Exception as e:
@@ -302,22 +270,14 @@ class LyricsManager:
                 if track.get("has_subtitles") == 1 or track.get("has_lyrics") == 1:
                     track_id = track.get("track_id")
                     
-                    if track.get("has_subtitles") == 1:
-                        s_res = self.session.get(f"{self.base_url}track.subtitle.get", params={"track_id": track_id, "apikey": self.musixmatch_token}, timeout=6).json()
-                        if s_res.get("message", {}).get("header", {}).get("status_code") == 200:
-                            sub_body = s_res.get("message", {}).get("body", {}).get("subtitle", {}).get("subtitle_body", "")
-                            if sub_body:
-                                self.subtitles_cache[norm_key] = sub_body
-                                self.titles_map[norm_key] = title
-                                print(f"   ✅ [Lyrics] LRC on-demand ottenuto (via track search) per '{title}'")
-                                return {"type": "lrc", "text": sub_body}
-                    
                     if track.get("has_lyrics") == 1:
                         l_res = self.session.get(f"{self.base_url}track.lyrics.get", params={"track_id": track_id, "apikey": self.musixmatch_token}, timeout=6).json()
                         if l_res.get("message", {}).get("header", {}).get("status_code") == 200:
                             lyrics_body = l_res.get("message", {}).get("body", {}).get("lyrics", {}).get("lyrics_body", "")
                             if lyrics_body:
                                 lyrics_body = lyrics_body.split('******* This Lyrics is NOT for Commercial use *******')[0].strip()
+                                self.lyrics_cache[norm_key] = lyrics_body
+                                self.titles_map[norm_key] = title
                                 print(f"   ✅ [Lyrics] Plain Text fallback ottenuto (via track search) per '{title}'")
                                 return {"type": "plain", "text": lyrics_body}
         except Exception as e:
@@ -408,12 +368,12 @@ class LyricsManager:
         real_title = self.titles_map[title_key]
         print(f"🧩 [Lyrics MATCH] Identificato: '{real_title}' (Confidence: {score}%)")
         
-        # Include i subtitles se disponibili per questo brano
-        synced_lyrics = self.subtitles_cache.get(title_key, None)
+        # Include il plain text se disponibile per questo brano
+        plain_lyrics = self.lyrics_cache.get(title_key, None)
         
         return {
             "status": "success", "title": real_title, "artist": self.current_artist,
             "score": score, "type": "Lyrics Match", "duration_ms": 0,
             "album": "Sconosciuto", "external_metadata": {}, "contributors": {}, "cover": None,
-            "synced_lyrics": synced_lyrics
+            "plain_lyrics": plain_lyrics
         }

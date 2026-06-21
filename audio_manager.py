@@ -580,7 +580,7 @@ class AudioManager:
                                 "upc": t.get("external_ids", {}).get("upc"),
                                 "external_metadata": t.get("external_metadata", {}),
                                 "contributors": t.get("contributors", {}),
-                                "synced_lyrics": None,  # verrà riempito da SessionManager._background_enrichment
+                                "plain_lyrics": None,  # verrà riempito da SessionManager._background_enrichment
                             })
 
 

@@ -253,8 +253,9 @@ class SessionManager:
             # Campi esclusi da Firestore:
             # - synced_lyrics: contenuto Musixmatch → regola "no persistent storage" del Musicathon
             # - play_offset_ms / recognition_ms: dati temporanei di sync, validi solo per la sessione live
-            # - _raw_meta: dati grezzi interni ACRCloud, non necessari su DB
-            EXCLUDE_FROM_DB = {'synced_lyrics', 'plain_lyrics', 'play_offset_ms', 'recognition_ms', '_raw_meta'}
+            # - plain_lyrics: contenuto Musixmatch → regola "no persistent storage" del Musicathon
+            
+            EXCLUDE_FROM_DB = {'plain_lyrics', 'play_offset_ms', 'recognition_ms', '_raw_meta'}
             db_entry = {k: v for k, v in song.items() if k not in EXCLUDE_FROM_DB}
             doc_ref.set(db_entry)
             print(f"☁️ Salvato su Cloud ({self.user_id}): {song['title']}")
@@ -266,7 +267,7 @@ class SessionManager:
     def _update_single_field(self, song_id, field, value):
         if not self.session_ref: return
         # Non persistiamo su Firestore i campi con contenuto Musixmatch o dati temporanei di sync
-        EXCLUDE_FROM_DB = {'synced_lyrics', 'plain_lyrics', 'play_offset_ms', 'recognition_ms', '_raw_meta'}
+        EXCLUDE_FROM_DB = {'plain_lyrics', 'play_offset_ms', 'recognition_ms', '_raw_meta'}
         if field in EXCLUDE_FROM_DB:
             return
         try:
@@ -394,8 +395,7 @@ class SessionManager:
                 "original_title": raw_title_for_report, 
                 "original_artist": raw_artist_for_report, 
                 "original_composer": composer_name,
-                "synced_lyrics": song_data.get('synced_lyrics', None),  # Karaoke LRC
-                "play_offset_ms": song_data.get('play_offset_ms', 0),   # Offset Karaoke
+                "plain_lyrics": song_data.get('plain_lyrics', None),   # Offset Karaoke
                 "recognition_ms": int(datetime.now().timestamp() * 1000), # Timestamp backend esatto (ms epoch) — usato per sync lyrics preciso
                 "confirmed": True,
                 "is_deleted": False,
@@ -452,8 +452,8 @@ class SessionManager:
                     target_song['cover'] = final_cover
                     self._update_single_field(target_song['id'], 'cover', final_cover)
 
-                # --- SYNC LYRICS: recupera LRC o Plain Text se non già presente ---
-                if not target_song.get('synced_lyrics') and not target_song.get('plain_lyrics') and self.lyrics_bot:
+                # --- SYNC LYRICS: recupera Plain Text se non già presente ---
+                if not target_song.get('plain_lyrics') and self.lyrics_bot:
                     try:
                         lyrics_data = self.lyrics_bot.get_best_lyrics(
                             title=target_song['title'],
@@ -461,11 +461,7 @@ class SessionManager:
                             duration_ms=target_song.get('duration_ms')
                         )
                         if lyrics_data:
-                            if lyrics_data["type"] == "lrc":
-                                target_song['synced_lyrics'] = lyrics_data["text"]
-                                self._update_single_field(target_song['id'], 'synced_lyrics', lyrics_data["text"])
-                                print(f"   🎵 [Sync] LRC aggiunto a '{target_song['title']}' via enrichment")
-                            elif lyrics_data["type"] == "plain":
+                            if lyrics_data["type"] == "plain":
                                 target_song['plain_lyrics'] = lyrics_data["text"]
                                 self._update_single_field(target_song['id'], 'plain_lyrics', lyrics_data["text"])
                                 print(f"   📄 [Lyrics] Plain Text aggiunto a '{target_song['title']}' via enrichment")

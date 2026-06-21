@@ -980,11 +980,7 @@ function processPlaylistData(playlist) {
 
         // Aggiorna plain_lyrics quando arrivano dall'enrichment in background
         if (!existing.plain_lyrics) {
-            // Se arrivano synced_lyrics (LRC), estraili come testo semplice
-            if (song.synced_lyrics) {
-                const parsed = parseLRC(song.synced_lyrics);
-                existing.plain_lyrics = parsed.map(x => x.text).join('\n');
-            } else if (song.plain_lyrics) {
+            if (song.plain_lyrics) {
                 existing.plain_lyrics = song.plain_lyrics;
             }
             // Aggiungi bottone "Leggi Testo" se non già presente
@@ -2143,24 +2139,6 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ==========================================================================
    TESTI BRANI
    ========================================================================== */
-
-/**
- * Utility: estrae il testo semplice da un formato LRC (usata dall'enrichment
- * per convertire synced_lyrics in plain text).
- */
-function parseLRC(lrcText) {
-    const lines = lrcText.split('\n');
-    const result = [];
-    const timeRegEx = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-    
-    for (let line of lines) {
-        line = line.trim();
-        if (!line) continue;
-        const text = line.replace(timeRegEx, '').trim();
-        if (text) result.push({ text: text });
-    }
-    return result;
-}
 
 function openLyricsModal(songId) {
     const song = songs.find(s => s.id == songId);
