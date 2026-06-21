@@ -2154,11 +2154,16 @@ function openLyricsModal(songId) {
     const container = $("#lyrics-container");
     if (container) {
         container.innerHTML = "";
-        const lines = song.plain_lyrics.split('\\n');
+        // Split by actual newline, handling both \r\n and \n
+        const lines = song.plain_lyrics.split(/\r?\n/);
         lines.forEach((line) => {
             const div = document.createElement("div");
             div.className = "lyric-line plain";
-            div.textContent = line || " ";
+            if (!line.trim()) {
+                div.style.height = "20px"; // Extra space for stanza breaks
+            } else {
+                div.textContent = line;
+            }
             container.appendChild(div);
         });
     }
