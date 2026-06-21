@@ -757,11 +757,11 @@ function hydrateSessionHeader() {
   if (!badge) return;
 
   if (state.mode === "band") {
-    // MODIFICA: Rimosso nome artista per Live Band, testo fisso
-    badge.textContent = "LIVE BAND";
+    // MODIFICA: Rimosso nome artista per Live Music, testo fisso
+    badge.textContent = "LIVE MUSIC";
   } else if (state.mode === "concert") {
     const artistName = state.concertArtist ? state.concertArtist.toUpperCase() : "";
-    badge.textContent = artistName ? `CONCERTO - ${artistName}` : "CONCERTO";
+    badge.textContent = artistName ? `TRIBUTE BAND - ${artistName}` : "TRIBUTE BAND";
   } else {
     badge.textContent = "SESSIONE";
   }
@@ -1803,8 +1803,8 @@ async function downloadExport(uiType) {
   const payload = {
       songs: songsPayload,
       mode: state.mode || "session",
-      // MODIFICA: Rimosso bandArtist, usa "Live Band" o concertArtist
-      artist: (state.mode === 'concert' ? state.concertArtist : "Live Band") || "Sconosciuto",
+      // MODIFICA: Rimosso bandArtist, usa "Live Music" o concertArtist
+      artist: (state.mode === 'concert' ? state.concertArtist : "Live Music") || "Sconosciuto",
       format: backendFormat
   };
 
