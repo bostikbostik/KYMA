@@ -9,84 +9,83 @@
 
 ---
 
-## 🎬 Demo Video
-[Guarda la demo di 90 secondi su YouTube](link_al_tuo_video_youtube)
+## Demo Video
+[Watch the 90-second demo on YouTube](link_al_tuo_video_youtube)
 
 ---
 
-## 🎵 Descrizione del Progetto
-**KYMA** è una web app completa progettata per arricchire l'esperienza degli eventi musicali dal vivo, offrendo un riconoscimento accurato in tempo reale e un accesso immediato ai testi sincronizzati e ai metadati dei brani eseguiti.
+## Project Description
+**KYMA** is a web application designed to enrich the live music event experience by providing highly accurate real-time music recognition, immediate access to song lyrics, and deep metadata extraction for live performances.
 
-Utilizzando un motore di riconoscimento ibrido (Audio + Testo) e integrandosi profondamente con le **API di Musixmatch**, KYMA "ascolta" le performance live (come concerti o tribute band), riconosce le canzoni in tempo reale, e mostra i testi sincronizzati (LRC) a schermo, recuperando inoltre i dettagli precisi sui compositori di ogni specifica traccia.
-
----
-
-## 🌟 Come utilizziamo Musixmatch (Core Feature)
-Musixmatch è il cuore del nostro sistema di riconoscimento e fornitura testi:
-* **`track.search`**: Per scaricare il repertorio di un artista (modalità Tribute Band) e favorire un match estremamente preciso.
-* **`matcher.subtitle.get`**: Per mostrare a schermo i **testi sincronizzati in tempo reale (LRC)** dei brani riconosciuti durante l'esibizione.
-* **`matcher.lyrics.get`**: Fallback intelligente per ottenere i testi completi in plain text.
-* **`matcher.track.get`**: Per recuperare l'**ISRC ufficiale** del brano e garantire l'accuratezza nell'identificazione dei compositori e degli autori.
+By combining an audio-text hybrid recognition engine and deeply integrating with the **Musixmatch APIs**, KYMA "listens" to live performances (such as concerts or tribute bands), identifies the tracks in real-time, displays the full song lyrics on screen, and retrieves precise details about the composers of each specific track.
 
 ---
 
-## 🚀 Funzionalità Principali
-
-### 🧠 Motore di riconoscimento ibrido
-* **Integrazione con ACRCloud:** Utilizza il confronto di campioni audio per ottenere un riconoscimento musicale ad alta precisione.
-* **ElevenLabs Scribe:** Utilizza un modello di IA per trascrivere il testo cantato dal vivo in tempo reale, fornendo una validazione aggiuntiva per il riconoscimento.
-* **Decisione smart:** Incrociando l'audio puro e il testo trascritto con il database di Musixmatch, il software garantisce un match corretto anche per cover e arrangiamenti live.
-
-### 🌍 Attenzione al contesto e ai Testi
-* **Live Music & Tribute Band:** Inserendo il nome dell'artista omaggiato, KYMA ottimizza la ricerca testuale e audio focalizzandosi su quel repertorio specifico.
-* **Aggregazione dei metadati:** Il software effettua una ricerca approfondita per estrarre la lista corretta e completa dei compositori e degli autori originali per ciascun brano rilevato.
-
-### ⏱️ Gestione della sessione Live
-* **Testi in tempo reale:** L'interfaccia mostra in tempo reale le canzoni rilevate e permette l'accesso immediato al testo del brano.
-* **Modifiche manuali:** Durante o dopo la sessione, è possibile correggere o annotare manualmente l'esito dei riconoscimenti.
+## How We Use Musixmatch (Core Feature)
+Musixmatch is the core of our recognition and lyrics retrieval system:
+* **`track.search`**: Used to download an artist's catalog (Tribute Band bias mode) to drastically improve recognition accuracy for specific live events.
+* **`matcher.subtitle.get` / `matcher.lyrics.get`**: Used to fetch the official, high-quality lyrics for the recognized tracks. (Note: LRC timestamps are parsed and stripped on the frontend to provide a clean, readable plain-text experience).
+* **`matcher.track.get`**: Crucial for retrieving the **official ISRC** of the recognized track, guaranteeing accuracy when identifying composers and publishers for royalty reporting purposes.
 
 ---
 
-## 🛠️ Info Tecniche
+## Key Features
+
+### Hybrid Recognition Engine
+* **ACRCloud Integration:** Utilizes audio fingerprinting for high-precision music recognition.
+* **ElevenLabs Scribe:** Leverages AI to transcribe live vocals in real-time, providing a secondary layer of validation for the audio fingerprint.
+* **Smart Decision Logic:** By cross-referencing pure audio fingerprints and transcribed vocals against the Musixmatch database, the software guarantees correct matches even for live covers and custom arrangements.
+
+### Context Awareness
+* **Live Music & Tribute Bands:** By inputting the name of the performing tribute band or artist, KYMA optimizes its search algorithms, focusing specifically on that artist's catalog.
+* **Metadata Aggregation:** The software performs deep searches to extract the correct and complete list of original composers and authors for every detected track.
+
+### Live Session Management
+* **Real-time Lyrics:** The interface displays detected songs in real-time, allowing users to instantly open and read the lyrics of the current track.
+* **Manual Overrides:** Users can manually correct or annotate the recognition results during or after the live session.
+
+---
+
+## Technical Stack
 
 ### Backend
-* **Linguaggio:** Python 3.x
+* **Language:** Python 3.x
 * **Framework:** Flask
 * **Audio Processing:** numpy, scipy, sounddevice
 * **APIs:**
     * **Musixmatch API** (Lyrics, LRC, Search, ISRC)
     * ACRCloud (Audio Fingerprinting) 
     * ElevenLabs (Speech-to-Text)
-    * Spotify Web API / MusicBrainz (Metadati extra)
+    * Spotify Web API / MusicBrainz (Extra metadata)
 
 ### Frontend
-* **Struttura:** HTML5, CSS3
-* **Logica:** Vanilla JavaScript (ES6+)
-* **Real-time:** Meccanismo di polling per aggiornare la playlist e i testi live
+* **Structure:** HTML5, CSS3
+* **Logic:** Vanilla JavaScript (ES6+)
+* **Architecture:** Real-time polling mechanism to update the live playlist and lyrics
 
 ---
 
-## ⚙️ Installazione
+## Installation & Setup
 
-### Prerequisiti
+### Prerequisites
 * Python 3.8+
-* Chiavi API per Musixmatch, ACRCloud, ed ElevenLabs
+* API keys for Musixmatch, ACRCloud, and ElevenLabs
 
-### Passaggi
+### Steps
 
-**1. Clona la repository**
+**1. Clone the repository**
 ```bash
 git clone https://github.com/bostikbostik/KYMA.git
 cd KYMA
 ```
 
-**2. Installa le dipendenze**
+**2. Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-**3. Configurazione dell'ambiente**
-Crea un file `.env` nella cartella principale e aggiungi le tue chiavi API:
+**3. Environment Setup**
+Create a `.env` file in the root directory and add your API keys:
 ```env
 MUSIXMATCH_API_KEY=your_musixmatch_key
 ACR_HOST=Identify-EU-West-1.acrcloud.com
@@ -95,8 +94,8 @@ ACR_ACCESS_SECRET=your_acr_secret
 ELEVENLABS_API_KEY=your_elevenlabs_key
 ```
 
-**4. Avvio dell'applicazione**
+**4. Run the application**
 ```bash
 python app.py
 ```
-L'applicazione si avvierà sul server locale: `http://localhost:5050`.
+The application will start on the local server at: `http://localhost:5050`.
