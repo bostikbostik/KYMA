@@ -8,3 +8,6 @@ firebase_credentials.json
 test_token.py
 *.tif
 *.zip
+session_live.db
+.cache
+create_banner.py
