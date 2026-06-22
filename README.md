@@ -10,7 +10,7 @@
 ---
 
 ## Demo Video
-[Watch the 90-second demo on YouTube](https://youtu.be/QEGp2Ft0hhM)
+[Watch the demo on YouTube](https://youtu.be/QEGp2Ft0hhM)
 
 ---
 
